@@ -8,6 +8,7 @@ from .models import Group, Post, User
 
 NUM_OF_POSTS = 10
 
+
 def index(request):
     text = 'Последние обновления на сайте'
     post_list = Post.objects.all()
