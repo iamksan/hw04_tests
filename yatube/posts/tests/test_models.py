@@ -52,7 +52,7 @@ class PostModelTest(TestCase):
                 self.assertEqual(
                     self.post._meta.get_field(value).help_text,
                     expected
-                    )
+                )
 
 
 class GroupModelTest(TestCase):
