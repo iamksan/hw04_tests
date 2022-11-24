@@ -76,9 +76,3 @@ class PostCreateFormTests(TestCase):
                 text="Отредактированный тестовая запись чезез форму",
             ).exists()
         )
-
-    def test_redirect_not_author(self):
-        response = self.authorized_client_not_author.get(
-            f"/posts/{self.post.pk}/edit/", follow=True
-        )
-        self.assertRedirects(response, f"/posts/{self.post.pk}/")
