@@ -1,112 +1,97 @@
-from django.contrib.auth import get_user_model
-from django.test import TestCase, Client
+from http import HTTPStatus
 
-from posts.models import Post, Group
+from django.contrib.auth import get_user_model
+from django.test import Client, TestCase
+from django.urls import reverse
+
+from ..models import Group, Post
 
 User = get_user_model()
 
 
-class PostURLTests(TestCase):
+class PostFormTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username="TestAuthor")
-        cls.user_not_author = User.objects.create_user(
-            username="TestNotAuthor"
+        cls.post_author = User.objects.create_user(
+            username='post_author',
         )
         cls.group = Group.objects.create(
-            title="Тестовая группа",
-            slug="testslug",
-            description="Тестовое описание",
-        )
-        cls.post = Post.objects.create(
-            author=cls.user,
-            text="Тестовая запись",
+            title='Тестовое название группы',
+            slug='test_slug',
+            description='Тестовое описание группы',
         )
 
     def setUp(self):
-        self.guest_client = Client()
-        self.authorized_client = Client()
-        self.authorized_client.force_login(self.user)
-        self.authorized_client_not_author = Client()
-        self.authorized_client_not_author.force_login(self.user_not_author)
+        self.guest_user = Client()
+        self.authorized_user = Client()
+        self.authorized_user.force_login(self.post_author)
 
-    def test_guest_urls_access(self):
-        """Страницы доступные любому пользователю."""
-
-        url_names = {
-            "/",
-            "/group/testslug/",
-            "/profile/TestAuthor/",
-            f"/posts/{self.post.pk}/",
+    def test_authorized_user_create_post(self):
+        """Проверка создания записи авторизированным клиентом."""
+        posts_count = Post.objects.count()
+        form_data = {
+            'text': 'Текст поста',
+            'group': self.group.id,
         }
-        for address in url_names:
-            with self.subTest(address=address):
-                response = self.guest_client.get(address)
-                self.assertEqual(response.status_code, 200)
-
-    # Проверяем доступность страниц для авторизованного пользователя
-    def test_autorized_urls_access(self):
-        """Страницы доступные авторизованному пользователю."""
-
-        url_names = {
-            "/",
-            "/group/testslug/",
-            "/profile/TestAuthor/",
-            f"/posts/{self.post.pk}/",
-            f"/posts/{self.post.pk}/edit/",
-            "/create/"
-        }
-        for address in url_names:
-            with self.subTest(address=address):
-                response = self.authorized_client.get(address)
-                self.assertEqual(response.status_code, 200)
-
-    # Проверяем редиректы для неавторизованного пользователя
-    def test_list_url_redirect_guest(self):
-        """Страницы перенаправляют анонимного пользователя
-        на страницу логина.
-        """
-
-        url_names_redirects = {
-            f"/posts/{self.post.pk}/edit/": (
-                f"/auth/login/?next=/posts/{self.post.pk}/edit/"
-            ),
-            "/create/": "/auth/login/?next=/create/"
-        }
-        for address, redirect_address in url_names_redirects.items():
-            with self.subTest(address=address):
-                response = self.guest_client.get(address, follow=True)
-                self.assertRedirects(response, redirect_address)
-
-    # Редирект для не автора
-    def test_redirect_not_author(self):
-        """Редирект при попытке редактирования поста не авром"""
-
-        response = self.authorized_client_not_author.get(
-            f"/posts/{self.post.pk}/edit/", follow=True
+        response = self.authorized_user.post(
+            reverse('posts:create'),
+            data=form_data,
+            follow=True
         )
-        self.assertRedirects(response, f"/posts/{self.post.pk}/")
+        self.assertRedirects(
+            response,
+            reverse(
+                'posts:profile',
+                kwargs={'username': self.post_author.username})
+        )
+        self.assertEqual(Post.objects.count(), posts_count + 1)
+        post = Post.objects.latest('id')
+        self.assertEqual(post.text, form_data['text'])
+        self.assertEqual(post.author, self.post_author)
+        self.assertEqual(post.group_id, form_data['group'])
 
-    # Проверка вызываемых шаблонов для каждого адреса
-    def test_task_list_url_corret_templates(self):
-        """Страницы доступные авторизованному пользователю."""
-
-        url_names_templates = {
-            "/": "posts/index.html",
-            "/group/testslug/": "posts/group_list.html",
-            "/profile/TestAuthor/": "posts/profile.html",
-            f"/posts/{self.post.pk}/": "posts/post_detail.html",
-            f"/posts/{self.post.pk}/edit/": "posts/create_post.html",
-            "/create/": "posts/create_post.html"
+    def test_authorized_user_edit_post(self):
+        """Проверка редактирования записи авторизированным клиентом."""
+        post = Post.objects.create(
+            text='Текст поста для редактирования',
+            author=self.post_author,
+            group=self.group,
+        )
+        form_data = {
+            'text': 'Отредактированный текст поста',
+            'group': self.group.id,
         }
-        for address, template in url_names_templates.items():
-            with self.subTest(address=address):
-                response = self.authorized_client.get(address)
-                self.assertTemplateUsed(response, template)
+        response = self.authorized_user.post(
+            reverse(
+                'posts:edit',
+                args=[post.id]),
+            data=form_data,
+            follow=True
+        )
+        self.assertRedirects(
+            response,
+            reverse('posts:post_detail', kwargs={'post_id': post.id})
+        )
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        post = Post.objects.latest('id')
+        self.assertTrue(post.text == form_data['text'])
+        self.assertTrue(post.author == self.post_author)
+        self.assertTrue(post.group_id == form_data['group'])
 
-    # Страница не найденна
-    def test_page_not_found(self):
-        """Страница не найденна."""
-        response = self.guest_client.get("/unexisting_page/")
-        self.assertEqual(response.status_code, 404)
+    def test_nonauthorized_user_create_post(self):
+        """Проверка создания записи не авторизированным пользователем."""
+        posts_count = Post.objects.count()
+        form_data = {
+            'text': 'Текст поста',
+            'group': self.group.id,
+        }
+        response = self.guest_user.post(
+            reverse('posts:create'),
+            data=form_data,
+            follow=True
+        )
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        redirect = reverse('login') + '?next=' + reverse('posts:create')
+        self.assertRedirects(response, redirect)
+        self.assertEqual(Post.objects.count(), posts_count)
