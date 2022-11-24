@@ -148,4 +148,3 @@ class StaticURLTests(TestCase):
             with self.subTest(adress=adress):
                 response = self.post_author.get(adress)
                 self.assertTemplateUsed(response, template)
-
