@@ -12,7 +12,7 @@ class PostCreateFormTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         # Создаем запись в базе данных для проверки сушествующего slug
-        cls.user = User.objects.create_user(username="TestAuthor")
+        cls.post_author = User.objects.create_user(username='post_author')
         cls.group = Group.objects.create(
             title="Тестовая группа",
             slug="testslug",
@@ -26,7 +26,7 @@ class PostCreateFormTests(TestCase):
 
     def setUp(self):
         self.authorized_client = Client()
-        self.authorized_client.force_login(self.user)
+        self.authorized_client.force_login(self.post_author)
 
     def test_create_post(self):
         """Валидная форма создает запись в Post."""
@@ -49,7 +49,7 @@ class PostCreateFormTests(TestCase):
         self.assertEqual(Post.objects.count(), post_count + 1)
         post = Post.objects.latest("id")
         self.assertEqual(post.text, form_data["text"])
-        self.assertEqual(post.author, self.post_author)
+        self.assertEqual(post.author, self.user)
         self.assertEqual(post.group_id, form_data["group"])
 
     def test_edit_post(self):
@@ -78,3 +78,19 @@ class PostCreateFormTests(TestCase):
                 text="Отредактированный тестовая запись чезез форму",
             ).exists()
         )
+
+    def test_nonauthorized_user_create_post(self):
+        """Проверка создания записи не авторизированным пользователем."""
+        posts_count = Post.objects.count()
+        form_data = {
+            "text": "Текст поста",
+            "group": self.group.id,
+        }
+        response = self.guest_user.post(
+            reverse("posts:create"),
+            data=form_data,
+            follow=True
+        )
+        redirect = reverse('login') + '?next=' + reverse('posts:create')
+        self.assertRedirects(response, redirect)
+        self.assertEqual(Post.objects.count(), posts_count)
