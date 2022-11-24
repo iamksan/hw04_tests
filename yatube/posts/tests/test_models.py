@@ -93,5 +93,5 @@ class GroupModelTest(TestCase):
         for value, expected in field_help_texts.items():
             with self.subTest(value=value):
                 self.assertEqual(
-                    group._meta.get_field(value).help_text, expected
+                    group._meta.get_field(value), expected
                 )
