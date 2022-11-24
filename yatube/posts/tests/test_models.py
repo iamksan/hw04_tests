@@ -49,7 +49,7 @@ class PostModelTest(TestCase):
         }
         for value, expected in field_help_texts.items():
             with self.subTest(value=value):
-                self.assertEqual(self.post._meta.get_field(value), expected)
+                self.assertEqual(self.post._meta.get_field(value).help_text, expected)
 
 
 class GroupModelTest(TestCase):
@@ -93,5 +93,5 @@ class GroupModelTest(TestCase):
         for value, expected in field_help_texts.items():
             with self.subTest(value=value):
                 self.assertEqual(
-                    group._meta.get_field(value), expected
+                    group._meta.get_field(value).help_text, expected
                 )
