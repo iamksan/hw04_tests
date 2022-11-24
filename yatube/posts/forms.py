@@ -37,7 +37,7 @@ class CommentForm(forms.ModelForm):
 
         if len(data) < COMMENT_MIN_LEN:
             raise forms.ValidationError(
-                f"Длинна комментария должна быть не менее {COMMENT_MIN_LEN} символов!"
+                f"Комментарий должен быть {COMMENT_MIN_LEN} символов!"
             )
 
         return data

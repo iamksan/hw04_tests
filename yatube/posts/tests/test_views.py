@@ -63,7 +63,7 @@ class TaskPagesTests(TestCase):
                 )
             )
         image_small_gif_uploaded = SimpleUploadedFile(
-            name=f"posts/post_second_image.gif",
+            name="posts/post_second_image.gif",
             content=cls.image_small_gif,
             content_type="image/gif",
         )
@@ -336,7 +336,8 @@ class TaskPagesTests(TestCase):
         )
 
     def test_autorized_can_follow_unfollow(self):
-        """Авторизованный пользователь может подписываться на других пользователей
+        """Авторизованный пользователь может
+        подписываться на других пользователей
         и удалять других пользователей из подписок."""
 
         profile_redirect_address = reverse(
