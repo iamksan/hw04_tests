@@ -27,7 +27,7 @@ class PostModelTest(TestCase):
 
     def test_verbose_name(self):
         """verbose_name в полях поста совпадает с ожидаемым."""
-        post = PostModelTest.post
+        post = self.post
         field_verboses = {
             "text": "Текст записи",
             "pub_date": "Дата публикации",
@@ -70,7 +70,7 @@ class GroupModelTest(TestCase):
 
     def test_verbose_name(self):
         """verbose_name в полях модели совпадает с ожидаемым."""
-        group = GroupModelTest.group
+        group = self.group
         field_verboses = {
             "title": "Название",
             "slug": "Ссылка на группу",
@@ -84,7 +84,7 @@ class GroupModelTest(TestCase):
 
     def test_help_text(self):
         """help_text в полях модели совпадает с ожидаемым."""
-        group = GroupModelTest.group
+        group = self.group
         field_help_texts = {
             "title": "Введите название группы",
             "slug": "Укажите ссылку на группу",

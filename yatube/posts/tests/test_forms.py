@@ -46,6 +46,8 @@ class PostCreateFormTests(TestCase):
         self.assertEqual(Post.objects.count(), post_count + 1)
         post = Post.objects.latest('id')
         self.assertEqual(post.text, form_data['text'])
+        self.assertEqual(post.author, self.user)
+        self.assertEqual(post.group, self.group)
 
     def test_edit_post(self):
         """Валидная форма редактирует запись в Post."""
@@ -68,28 +70,7 @@ class PostCreateFormTests(TestCase):
         )
         # Проверяем, что не создался новый пост
         self.assertEqual(Post.objects.count(), post_count)
-        post_edit = Post.objects.get(id=self.group.pk)
-        self.assertEqual(post_edit.text, 'Отредактированная запись.')
-
-    def test_authorized_user_edit_post(self):
-        """Проверка редактирования записи авторизированным клиентом."""
-        post = Post.objects.create(
-            text='Текст поста для редактирования',
-            author=self.user,
-            group=self.group,
-        )
-        form_data = {
-            'text': 'Отредактированный текст поста',
-            'group': self.group.id,
-        }
-        response = self.authorized_client.post(
-            reverse(
-                'posts:post_edit',
-                args=[post.id]),
-            data=form_data,
-            follow=True
-        )
-        self.assertRedirects(
-            response,
-            reverse('posts:post_detail', kwargs={'post_id': post.id})
-        )
+        post_edit = Post.objects.get(id=self.post.pk)
+        self.assertEqual(post_edit.text, form_data['text'])
+        self.assertEqual(post_edit.author, self.user)
+        self.assertEqual(post_edit.group, self.group)
