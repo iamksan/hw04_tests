@@ -2,7 +2,7 @@ from django import forms
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from ..models import Group, Post, User
+from ..models import Group, Post , User
 
 
 class PostTests(TestCase):
@@ -21,14 +21,12 @@ class PostTests(TestCase):
             text='Тестовый пост',
             group=cls.group,
         )
-
     def setUp(self):
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client_author = Client()
         self.authorized_client.force_login(PostTests.auth_user)
         self.authorized_client_author.force_login(PostTests.author)
-
     def test_pages_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
         page_names_templates = {
@@ -51,7 +49,6 @@ class PostTests(TestCase):
             with self.subTest(template=template):
                 response = self.authorized_client_author.get(reverse_name)
                 self.assertTemplateUsed(response, template)
-
     def test_home_page_show_correct_context(self):
         """Шаблон главной страницы сформирован с правильным контекстом."""
         response = self.authorized_client.get(reverse('posts:index'))
@@ -74,7 +71,6 @@ class PostTests(TestCase):
         self.assertEqual(group_title, 'Тестовая группа')
         self.assertEqual(group_description, 'Тестовое описание')
         self.assertEqual(group_slug, 'test-slug')
-
     def test_profile_page_show_correct_context(self):
         """Шаблон profile сформирован с правильным контекстом."""
         url = reverse('posts:profile', kwargs={'username': PostTests.author})
@@ -85,7 +81,6 @@ class PostTests(TestCase):
         self.assertEqual(post_text, 'Тестовый пост')
         self.assertEqual(post_author, 'TestAuthor')
         self.assertEqual(group_post, 'Тестовая группа')
-
     def test_post_detail_pages_show_correct_context(self):
         """Шаблон post_detail сформирован с правильным контекстом."""
         url = reverse('posts:post_detail', kwargs={'post_id': self.post.pk})
@@ -96,7 +91,6 @@ class PostTests(TestCase):
         self.assertEqual(post_text, 'Тестовый пост')
         self.assertEqual(post_author, 'TestAuthor')
         self.assertEqual(group_post, 'Тестовая группа')
-
     def test_create_post_edit_show_correct_context(self):
         """Шаблон редактирования поста create_post сформирован
         с правильным контекстом.
@@ -111,7 +105,6 @@ class PostTests(TestCase):
             with self.subTest(field=field):
                 form_field = response.context.get('form').fields.get(field)
                 self.assertIsInstance(form_field, expected)
-
     def test_create_post_show_correct_context(self):
         """Шаблон создания поста create_post сформирован
         с правильным контекстом.
@@ -126,7 +119,6 @@ class PostTests(TestCase):
             with self.subTest(field=field):
                 form_field = response.context.get('form').fields.get(field)
                 self.assertIsInstance(form_field, expected)
-
     def test_create_post_show_home_group_list_profile_pages(self):
         """Созданный пост отобразился на главной, на странице группы,
         в профиле пользователя.
@@ -141,7 +133,6 @@ class PostTests(TestCase):
         for url in urls:
             response = self.authorized_client_author.get(url)
             self.assertEqual(len(response.context['page_obj'].object_list), 1)
-
     def test_post_not_another_group(self):
         """Созданный пост не попал в группу, для которой не был предназначен"""
         another_group = Group.objects.create(
@@ -153,8 +144,6 @@ class PostTests(TestCase):
             reverse('posts:group_list', kwargs={'slug': another_group.slug})
         )
         self.assertEqual(len(response.context['page_obj']), 0)
-
-
 class PaginatorViewsTest(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -175,7 +164,6 @@ class PaginatorViewsTest(TestCase):
             for i in range(13)
         ]
         Post.objects.bulk_create(cls.posts)
-
     def test_first_page_contains_ten_records(self):
         """Количество постов на страницах index, group_list, profile
         равно 10.
@@ -193,16 +181,12 @@ class PaginatorViewsTest(TestCase):
             self.assertEqual(amount_posts, 10)
 
     def test_second_page_contains_three_records(self):
-        """На страницах index, group_list, profile
-        должно быть по три поста.
-        """
         urls = (
             reverse('posts:index') + '?page=2',
             reverse(
                 'posts:group_list', kwargs={'slug': self.group.slug}
             ) + '?page=2',
-            reverse(
-                'posts:profile', kwargs={'username': self.author.username}
+            reverse('posts:profile', kwargs={'username': self.author.username}
             ) + '?page=2',
         )
         for url in urls:
