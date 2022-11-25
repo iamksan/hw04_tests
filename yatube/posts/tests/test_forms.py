@@ -25,6 +25,7 @@ class PostCreateFormTests(TestCase):
         )
 
     def setUp(self):
+        self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
@@ -74,3 +75,17 @@ class PostCreateFormTests(TestCase):
         self.assertEqual(post_edit.text, form_data['text'])
         self.assertEqual(post_edit.author, self.user)
         self.assertEqual(post_edit.group, self.group)
+
+    def test_guest_new_post(self):
+        # неавторизоанный не может создавать посты
+        form_data = {
+            'text': 'Пост от неавторизованного пользователя',
+            'group': self.group.pk
+        }
+        self.guest_client.post(
+            reverse('posts:post_create'),
+            data=form_data,
+            follow=True,
+        )
+        self.assertFalse(Post.objects.filter(
+            text='Пост от неавторизованного пользователя').exists())
