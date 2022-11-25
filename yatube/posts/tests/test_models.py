@@ -39,7 +39,7 @@ class PostModelTest(TestCase):
                 self.assertEqual(
                     post._meta.get_field(value).verbose_name, expected
                 )
-    
+
     def test_help_text(self):
         """help_text в полях поста совпадает с ожидаемым."""
         field_help_texts = {
@@ -52,8 +52,7 @@ class PostModelTest(TestCase):
                     self.post._meta.get_field(value).help_text,
                     expected
                 )
-                
-                
+
 
 class GroupModelTest(TestCase):
     @classmethod
@@ -64,11 +63,11 @@ class GroupModelTest(TestCase):
             slug="testslug",
             description="Тестовое описание",
         )
-    
+
     def test_models_have_correct_object_names(self):
         """Проверяем, что у моделей группы корректно работает __str__."""
         self.assertEqual(self.group.title, str(self.group))
-    
+
     def test_verbose_name(self):
         """verbose_name в полях модели совпадает с ожидаемым."""
         group = GroupModelTest.group
@@ -82,7 +81,7 @@ class GroupModelTest(TestCase):
                 self.assertEqual(
                     group._meta.get_field(value).verbose_name, expected
                 )
-    
+
     def test_help_text(self):
         """help_text в полях модели совпадает с ожидаемым."""
         group = GroupModelTest.group
