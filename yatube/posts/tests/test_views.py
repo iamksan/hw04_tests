@@ -26,7 +26,7 @@ class PostsViewsTests(TestCase):
 
         cls.templates_pages_names = {
             'posts/index.html': reverse('posts:index'),
-            'posts/post_create.html': reverse('posts:post_create'),
+            'posts/create_post.html': reverse('posts:post_create'),
             'posts/group_list.html': reverse(
                 'posts:group_list',
                 kwargs={'slug': 'test-slug'},
@@ -124,11 +124,10 @@ class PostsViewsTests(TestCase):
                 kwargs={'username': self.user.username},
             )
         )
-        profile = {'user_obj': self.post.author}
+        profile = {'user': self.post.author}
         for value, expected in profile.items():
             with self.subTest(value=value):
                 self.assertEqual(response.context[value], expected)
-
         self.posts_check_all_fields(response.context['page_obj'][0])
         test_page = response.context['page_obj'][0]
         self.assertEqual(test_page, self.user.posts.all()[0])
