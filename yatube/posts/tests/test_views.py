@@ -47,9 +47,9 @@ class PostsViewsTests(TestCase):
 
     def test_posts_pages_use_correct_template(self):
         """Проверка, использует ли адрес URL соответствующий шаблон."""
-        for template, reverse_name in self.templates_pages_names.items():
+        for template, adress in self.templates_pages_names.items():
             with self.subTest(template=template):
-                response = self.authorized_client_author.get(reverse_name)
+                response = self.authorized_client.get(adress)
                 self.assertTemplateUsed(response, template)
 
     def test_posts_context_index_template(self):
