@@ -91,5 +91,5 @@ class PostCreateFormTests(TestCase):
             text='Пост от неавторизованного пользователя').exists())
         self.assertRedirects(
             response,
-            f'/auth/login/?next=/posts/1/create'
+            '/auth/login/?next=/posts/1/create'
         )
