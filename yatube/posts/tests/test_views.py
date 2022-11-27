@@ -184,7 +184,7 @@ class PostsPaginatorViewsTests(TestCase):
         """Проверка, содержит ли первая страница 10 записей."""
         response = self.authorized_client.get(reverse('posts:index'))
         count_posts = len(response.context['page_obj'])
-        self.assertEqual(len(count_posts,settings.FIRST_OF_POSTS))
+        self.assertEqual(len(count_posts, settings.FIRST_OF_POSTS))
 
     def test_posts_if_second_page_has_three_records(self):
         """Проверка, содержит ли вторая страница 3 записи."""
