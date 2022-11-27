@@ -6,7 +6,7 @@ from django.conf import settings
 
 from ..models import Group, Post
 
-TEST_OF_POST: int = 10
+TEST_OF_POST: int = 13
 User = get_user_model()
 
 
@@ -183,7 +183,8 @@ class PostsPaginatorViewsTests(TestCase):
     def test_posts_if_first_page_has_ten_records(self):
         """Проверка, содержит ли первая страница 10 записей."""
         response = self.authorized_client.get(reverse('posts:index'))
-        self.assertEqual(len(response.context.get('page_obj').object_list))
+        count_posts = len(response.context['page_obj'])
+        self.assertEqual(len(count_posts,settings.FIRST_OF_POSTS))
 
     def test_posts_if_second_page_has_three_records(self):
         """Проверка, содержит ли вторая страница 3 записи."""
