@@ -64,7 +64,7 @@ class PostURLTests(TestCase):
 
     def test_guest_urls_access(self):
         """Страницы доступные любому пользователю."""
-        for address in self.templates_url_names_public.items():
+        for address in self.templates_url_names_public.values():
             with self.subTest(address=address):
                 response = self.guest_client.get(address)
                 self.assertEqual(response.status_code, 200)
@@ -72,7 +72,7 @@ class PostURLTests(TestCase):
     # Проверяем доступность страниц для авторизованного пользователя
     def test_autorized_urls_access(self):
         """Страницы доступные авторизованному пользователю."""
-        for address in self.templates_url_names.items():
+        for address in self.templates_url_names.values():
             with self.subTest(address=address):
                 response = self.authorized_client.get(address)
                 self.assertEqual(response.status_code, 200)
