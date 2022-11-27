@@ -67,7 +67,7 @@ class PostURLTests(TestCase):
         for address in self.templates_url_names_public.items():
             with self.subTest(address=address):
                 response = self.guest_client.get(address)
-                self.assertEqual(response.status_code, 404)
+                self.assertEqual(response.status_code, 200)
 
     # Проверяем доступность страниц для авторизованного пользователя
     def test_autorized_urls_access(self):
@@ -75,7 +75,7 @@ class PostURLTests(TestCase):
         for address in self.templates_url_names.items():
             with self.subTest(address=address):
                 response = self.authorized_client.get(address)
-                self.assertEqual(response.status_code, 404)
+                self.assertEqual(response.status_code, 200)
 
     # Проверяем редиректы для неавторизованного пользователя
     def test_list_url_redirect_guest(self):

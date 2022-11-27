@@ -2,9 +2,11 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
+from django.conf import settings
 
-from posts.models import Group, Post
+from ..models import Group, Post
 
+TEST_OF_POST: int = 10
 User = get_user_model()
 
 
@@ -155,10 +157,9 @@ class PostsViewsTests(TestCase):
         ли он в другую группу.
         """
         response = self.authorized_client.get(reverse('posts:index'))
-        self.posts_check_all_fields(response.context['page_obj'][0])
         post = response.context['page_obj'][0]
-        group = post.group
-        self.assertEqual(group, self.group)
+        self.posts_check_all_fields(post)
+        self.assertEqual(post.group, self.group)
 
 
 class PostsPaginatorViewsTests(TestCase):
@@ -166,22 +167,28 @@ class PostsPaginatorViewsTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username='Тестовый пользователь')
+        cls.group = Group.objects.create(
+            title='Тестовая группа',
+            slug='test_group'
+        )
         cls.authorized_client = Client()
         cls.authorized_client.force_login(cls.user)
-        for count in range(13):
-            cls.post = Post.objects.create(
-                text=f'Тестовый текст поста номер {count}',
-                author=cls.user,
-            )
+        bilk_post: list = []
+        for i in range(TEST_OF_POST):
+            bilk_post.append(Post(text=f'Тестовый текст {i}',
+                                  group=cls.group,
+                                  author=cls.user))
+        Post.objects.bulk_create(bilk_post)
 
     def test_posts_if_first_page_has_ten_records(self):
         """Проверка, содержит ли первая страница 10 записей."""
         response = self.authorized_client.get(reverse('posts:index'))
-        self.assertEqual(len(response.context.get('page_obj').object_list), 10)
+        self.assertEqual(len(response.context.get('page_obj').object_list))
 
     def test_posts_if_second_page_has_three_records(self):
         """Проверка, содержит ли вторая страница 3 записи."""
         response = self.authorized_client.get(
             reverse('posts:index') + '?page=2'
         )
-        self.assertEqual(len(response.context.get('page_obj').object_list), 3)
+        count_posts = len(response.context['page_obj'])
+        self.assertEqual(count_posts, TEST_OF_POST - settings.FIRST_OF_POSTS)

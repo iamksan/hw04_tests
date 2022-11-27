@@ -82,10 +82,14 @@ class PostCreateFormTests(TestCase):
             'text': 'Пост от неавторизованного пользователя',
             'group': self.group.pk
         }
-        self.guest_client.post(
+        response = self.guest_client.post(
             reverse('posts:post_create'),
             data=form_data,
             follow=True,
         )
         self.assertFalse(Post.objects.filter(
             text='Пост от неавторизованного пользователя').exists())
+        self.assertRedirects(
+            response,
+            f'/auth/login/?next=/posts/{self.post.pk}/create/'
+        )
