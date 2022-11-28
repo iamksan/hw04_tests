@@ -87,9 +87,7 @@ class PostCreateFormTests(TestCase):
             data=form_data,
             follow=True,
         )
+        redirect = reverse('login') + '?next=' + reverse('posts:post_create')
         self.assertFalse(Post.objects.filter(
             text='Пост от неавторизованного пользователя').exists())
-        self.assertRedirects(
-            response,
-            '/auth/login/?next=/create/'
-        )
+        self.assertRedirects(response, redirect)

@@ -35,6 +35,13 @@ class PostsViewsTests(TestCase):
             )
         }
 
+        cls.template_page_name = {
+            'posts/post_detail.html': reverse(
+                'posts:post_detail',
+                kwargs={'post_id': cls.post.pk}
+            )
+        }
+
     def setUp(self):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
@@ -61,8 +68,8 @@ class PostsViewsTests(TestCase):
         Появляется ли пост, при создании на главной странице.
         """
         response = self.authorized_client.get(reverse('posts:index'))
-        self.posts_check_all_fields(response.context['page_obj'][0])
         last_post = response.context['page_obj'][0]
+        self.posts_check_all_fields(last_post)
         self.assertEqual(last_post, self.post)
 
     def test_posts_context_group_list_template(self):
@@ -78,10 +85,10 @@ class PostsViewsTests(TestCase):
             )
         )
         test_group = response.context['group']
-        self.posts_check_all_fields(response.context['page_obj'][0])
-        test_post = str(response.context['page_obj'][0])
+        test_post = response.context['page_obj'][0]
+        self.posts_check_all_fields(test_post)
         self.assertEqual(test_group, self.group)
-        self.assertEqual(test_post, str(self.post))
+        self.assertEqual(str(test_post), str(self.post))
 
     def test_posts_context_post_create_template(self):
         """
@@ -130,8 +137,8 @@ class PostsViewsTests(TestCase):
         for value, expected in profile.items():
             with self.subTest(value=value):
                 self.assertEqual(response.context[value], expected)
-        self.posts_check_all_fields(response.context['page_obj'][0])
         test_page = response.context['page_obj'][0]
+        self.posts_check_all_fields(test_page)
         self.assertEqual(test_page, self.user.posts.all()[0])
 
     def test_posts_context_post_detail_template(self):
@@ -139,12 +146,9 @@ class PostsViewsTests(TestCase):
         Проверка, сформирован ли шаблон post_detail с
         правильным контекстом.
         """
-        response = self.authorized_client.get(
-            reverse(
-                'posts:post_detail',
-                kwargs={'post_id': self.post.id},
-            )
-        )
+        for reverse_name in self.template_page_name.values():
+            with self.subTest():
+                response = self.authorized_client.get(reverse_name)
         profile = {'post': self.post}
         for value, expected in profile.items():
             with self.subTest(value=value):
@@ -188,6 +192,7 @@ class PostsPaginatorViewsTests(TestCase):
 
     def test_posts_if_second_page_has_three_records(self):
         """Проверка, содержит ли вторая страница 3 записи."""
+
         response = self.authorized_client.get(
             reverse('posts:index') + '?page=2'
         )
