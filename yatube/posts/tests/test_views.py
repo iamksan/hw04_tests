@@ -190,11 +190,16 @@ class PostsPaginatorViewsTests(TestCase):
         count_posts = len(response.context['page_obj'])
         self.assertEqual(count_posts, settings.FIRST_OF_POSTS)
 
+    def gen_natural_numbers():
+        cur = 2
+        while True:
+            yield cur
+            cur += 1
+    natural_num_gen = gen_natural_numbers()
     def test_posts_if_second_page_has_three_records(self):
         """Проверка, содержит ли вторая страница 3 записи."""
-
         response = self.authorized_client.get(
-            reverse('posts:index') + '?page=2'
+            reverse('posts:index') + f'?page={next(self.natural_num_gen)}'
         )
         count_posts = len(response.context['page_obj'])
         self.assertEqual(count_posts, TEST_OF_POST - settings.FIRST_OF_POSTS)
