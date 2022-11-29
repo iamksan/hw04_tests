@@ -196,6 +196,7 @@ class PostsPaginatorViewsTests(TestCase):
             yield cur
             cur += 1
     natural_num_gen = gen_natural_numbers()
+
     def test_posts_if_second_page_has_three_records(self):
         """Проверка, содержит ли вторая страница 3 записи."""
         response = self.authorized_client.get(
