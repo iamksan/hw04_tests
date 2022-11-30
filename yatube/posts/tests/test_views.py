@@ -203,4 +203,4 @@ class PostsPaginatorViewsTests(TestCase):
             reverse('posts:index') + f'?page={next(self.natural_num_gen)}'
         )
         count_posts = len(response.context['page_obj'])
-        self.assertEqual(count_posts, settings.TEST_OF_POSTS)
+        self.assertEqual(count_posts, TEST_OF_POST % settings.FIRST_OF_POSTS)

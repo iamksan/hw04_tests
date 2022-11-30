@@ -141,4 +141,3 @@ EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
 
 FIRST_OF_POSTS = 10
-TEST_OF_POSTS = 3
